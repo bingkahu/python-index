@@ -1,222 +1,543 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baghdad: The Great Round City</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --gold: #d4af37; --sand: #f4e4bc; --bg: rgba(11, 10, 9, 0.85); }
-        body { margin: 0; overflow: hidden; background: #0b0a09; font-family: 'Cinzel', serif; }
-        
-        /* IMPROVED SIDEBAR UI */
-        #sidebar {
-            position: fixed; left: 0; top: 0; bottom: 0; width: 320px;
-            background: var(--bg); border-right: 1px solid var(--gold);
-            color: var(--sand); z-index: 60; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; flex-direction: column; padding: 30px 20px; box-sizing: border-box;
-            backdrop-filter: blur(15px);
-        }
-        #sidebar.collapsed { transform: translateX(-100%); }
-        
-        #sidebar-toggle {
-            position: absolute; right: -50px; top: 20px; width: 50px; height: 50px;
-            background: var(--bg); border: 1px solid var(--gold); border-left: none;
-            color: var(--gold); cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; transition: 0.3s; backdrop-filter: blur(10px);
-        }
-        #sidebar-toggle:hover { color: white; background: var(--gold); }
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Lingo Dictionary</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+    
+    .snake-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(74, 222, 128, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.05) 0%, transparent 70%);
+    }
+    
+    .term-card {
+      transition: all 0.2s ease;
+    }
+    .term-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .category-pill {
+      transition: all 0.15s ease;
+    }
+    .category-pill:hover {
+      transform: scale(1.05);
+    }
+    .category-pill.active {
+      ring: 2px;
+      ring-offset: 2px;
+    }
+    
+    .search-glow:focus {
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.3);
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full font-display">
+  <div id="app" class="h-full w-full snake-pattern overflow-auto" style="background-color: #0f172a;"><!-- Header -->
+   <header class="sticky top-0 z-20 border-b" style="background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-color: #334155;">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+     <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #4ade80, #3b82f6);">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        </svg>
+       </div>
+       <div>
+        <h1 id="main-title" class="text-xl font-bold" style="color: #f1f5f9;">Python Lingo Dictionary</h1>
+        <p class="text-xs" style="color: #64748b;">Your complete guide to Python terminology</p>
+       </div>
+      </div>
+      <div id="term-count" class="text-sm font-mono-code px-3 py-1 rounded-full" style="background-color: #1e293b; color: #4ade80;"></div>
+     </div><!-- Search -->
+     <div class="relative">
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style="color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg><input type="text" id="search-input" placeholder="Search terms, definitions, or categories..." class="w-full pl-12 pr-4 py-3 rounded-xl border search-glow outline-none font-mono-code text-sm" style="background-color: #1e293b; border-color: #334155; color: #f1f5f9;">
+     </div><!-- Category Filters -->
+     <div class="flex flex-wrap gap-2 mt-4" id="category-filters"></div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-6xl mx-auto px-4 py-6">
+    <div id="terms-grid" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+    <div id="no-results" class="hidden text-center py-16">
+     <div class="text-6xl mb-4">
+      🐍
+     </div>
+     <h3 class="text-xl font-semibold mb-2" style="color: #f1f5f9;">No terms found</h3>
+     <p style="color: #64748b;">Try a different search term or category</p>
+    </div>
+   </main>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: 'Python Lingo Dictionary',
+      search_placeholder: 'Search terms, definitions, or categories...',
+      background_color: '#0f172a',
+      card_color: '#1e293b',
+      text_color: '#f1f5f9',
+      accent_color: '#4ade80',
+      secondary_color: '#3b82f6',
+      font_family: 'Space Grotesk',
+      font_size: 16
+    };
 
-        /* CLEANER MAP */
-        #mini-map {
-            width: 100%; aspect-ratio: 1/1; border: 1px solid rgba(212,175,55,0.3);
-            background: rgba(0,0,0,0.4); position: relative; margin: 15px 0; border-radius: 4px;
-        }
-        #map-dot { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; position: absolute; transform: translate(-50%, -50%); box-shadow: 0 0 10px #ff4444; }
-        .map-center { width: 12px; height: 12px; border: 2px solid var(--gold); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    let config = { ...defaultConfig };
 
-        .sidebar-section { margin-bottom: 25px; }
-        .sidebar-section h3 { font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-bottom: 12px; opacity: 0.8; }
-        .desc-text { font-size: 0.85rem; line-height: 1.6; color: #d1c4b1; }
-        
-        .toggle-container { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; cursor: pointer; padding: 10px; border: 1px solid rgba(212,175,55,0.2); border-radius: 4px; }
-        
-        .nav-links { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
-        .ui-btn { 
-            text-decoration: none; font-size: 0.7rem; padding: 12px; text-align: center;
-            border: 1px solid var(--gold); color: var(--gold); transition: 0.3s;
-            background: rgba(212,175,55,0.05);
-        }
-        .ui-btn:hover { background: var(--gold); color: black; }
+    const pythonTerms = [
+      // Core Concepts
+      { term: "Variable", definition: "A named container that stores a value in memory. Variables can hold different data types and their values can change during program execution.", category: "Core Concepts", example: "x = 42" },
+      { term: "Data Type", definition: "A classification that specifies which type of value a variable can hold, such as integers, strings, floats, or booleans.", category: "Core Concepts", example: "int, str, float, bool" },
+      { term: "String", definition: "A sequence of characters enclosed in quotes. Strings are immutable and can be manipulated using various built-in methods.", category: "Core Concepts", example: "'Hello, World!'" },
+      { term: "Integer", definition: "A whole number without a decimal point. Can be positive, negative, or zero.", category: "Core Concepts", example: "42, -17, 0" },
+      { term: "Float", definition: "A number with a decimal point. Used for representing real numbers with fractional parts.", category: "Core Concepts", example: "3.14159" },
+      { term: "Boolean", definition: "A data type with only two possible values: True or False. Used for logical operations and conditions.", category: "Core Concepts", example: "True, False" },
+      { term: "None", definition: "A special constant representing the absence of a value or a null value. Often used as a default return value.", category: "Core Concepts", example: "x = None" },
+      { term: "Type Casting", definition: "Converting a value from one data type to another using functions like int(), str(), float().", category: "Core Concepts", example: "int('42')" },
+      { term: "Expression", definition: "A combination of values, variables, and operators that evaluates to a single value.", category: "Core Concepts", example: "2 + 3 * 4" },
+      { term: "Statement", definition: "A complete line of code that performs an action. Unlike expressions, statements don't necessarily produce a value.", category: "Core Concepts", example: "print('Hello')" },
+      
+      // Data Structures
+      { term: "List", definition: "An ordered, mutable collection of items enclosed in square brackets. Lists can contain mixed data types.", category: "Data Structures", example: "[1, 2, 'three']" },
+      { term: "Tuple", definition: "An ordered, immutable collection of items enclosed in parentheses. Once created, tuples cannot be modified.", category: "Data Structures", example: "(1, 2, 3)" },
+      { term: "Dictionary", definition: "An unordered collection of key-value pairs enclosed in curly braces. Keys must be unique and immutable.", category: "Data Structures", example: "{'name': 'Python'}" },
+      { term: "Set", definition: "An unordered collection of unique elements. Sets automatically remove duplicates and support mathematical set operations.", category: "Data Structures", example: "{1, 2, 3}" },
+      { term: "Array", definition: "A collection of items stored at contiguous memory locations. In Python, typically implemented via the array module or NumPy.", category: "Data Structures", example: "array.array('i', [1,2,3])" },
+      { term: "Queue", definition: "A First-In-First-Out (FIFO) data structure. Elements are added at the rear and removed from the front.", category: "Data Structures", example: "from collections import deque" },
+      { term: "Stack", definition: "A Last-In-First-Out (LIFO) data structure. Elements are added and removed from the same end.", category: "Data Structures", example: "stack.append(); stack.pop()" },
+      { term: "Deque", definition: "A double-ended queue that supports adding and removing elements from both ends efficiently.", category: "Data Structures", example: "deque([1, 2, 3])" },
+      { term: "Frozenset", definition: "An immutable version of a set. Once created, elements cannot be added or removed.", category: "Data Structures", example: "frozenset([1, 2, 3])" },
+      { term: "Named Tuple", definition: "A tuple subclass that allows accessing elements by name as well as by index.", category: "Data Structures", example: "Point = namedtuple('Point', ['x', 'y'])" },
+      
+      // Functions
+      { term: "Function", definition: "A reusable block of code that performs a specific task. Defined using the 'def' keyword.", category: "Functions", example: "def greet(): pass" },
+      { term: "Parameter", definition: "A variable listed in a function's definition that receives a value when the function is called.", category: "Functions", example: "def greet(name):" },
+      { term: "Argument", definition: "The actual value passed to a function when it is called.", category: "Functions", example: "greet('Alice')" },
+      { term: "Return", definition: "A statement that exits a function and optionally passes a value back to the caller.", category: "Functions", example: "return result" },
+      { term: "Lambda", definition: "An anonymous, single-expression function defined with the lambda keyword. Often used for short, throwaway functions.", category: "Functions", example: "lambda x: x * 2" },
+      { term: "Recursion", definition: "A technique where a function calls itself to solve smaller instances of the same problem.", category: "Functions", example: "def factorial(n): return n * factorial(n-1)" },
+      { term: "*args", definition: "A special syntax for passing a variable number of positional arguments to a function.", category: "Functions", example: "def func(*args):" },
+      { term: "**kwargs", definition: "A special syntax for passing a variable number of keyword arguments to a function as a dictionary.", category: "Functions", example: "def func(**kwargs):" },
+      { term: "Docstring", definition: "A string literal that appears as the first statement in a function, class, or module to document its purpose.", category: "Functions", example: '"""This function does..."""' },
+      { term: "Closure", definition: "A function that remembers values from its enclosing scope even after that scope has finished executing.", category: "Functions", example: "def outer(): x=1; def inner(): return x" },
+      { term: "Higher-Order Function", definition: "A function that takes another function as an argument or returns a function as its result.", category: "Functions", example: "map(), filter(), reduce()" },
+      { term: "Callback", definition: "A function passed as an argument to another function, to be called later when a certain event occurs.", category: "Functions", example: "button.onclick(callback_func)" },
+      
+      // Control Flow
+      { term: "If Statement", definition: "A conditional statement that executes code only if a specified condition is True.", category: "Control Flow", example: "if x > 0: print('positive')" },
+      { term: "Elif", definition: "Short for 'else if'. Allows checking multiple conditions in sequence.", category: "Control Flow", example: "elif x < 0:" },
+      { term: "Else", definition: "A clause that executes when all preceding if/elif conditions are False.", category: "Control Flow", example: "else: print('zero')" },
+      { term: "For Loop", definition: "A loop that iterates over a sequence (list, tuple, string, etc.) executing code for each item.", category: "Control Flow", example: "for i in range(10):" },
+      { term: "While Loop", definition: "A loop that continues executing as long as a specified condition remains True.", category: "Control Flow", example: "while x > 0:" },
+      { term: "Break", definition: "A statement that immediately exits the innermost loop.", category: "Control Flow", example: "if found: break" },
+      { term: "Continue", definition: "A statement that skips the rest of the current iteration and moves to the next one.", category: "Control Flow", example: "if skip: continue" },
+      { term: "Pass", definition: "A null statement that does nothing. Used as a placeholder where syntax requires a statement.", category: "Control Flow", example: "if True: pass" },
+      { term: "Match Statement", definition: "A structural pattern matching feature (Python 3.10+) similar to switch/case in other languages.", category: "Control Flow", example: "match value: case 1: ..." },
+      { term: "Ternary Operator", definition: "A one-line conditional expression that returns one of two values based on a condition.", category: "Control Flow", example: "x if condition else y" },
+      
+      // OOP
+      { term: "Class", definition: "A blueprint for creating objects. Classes encapsulate data (attributes) and behavior (methods).", category: "OOP", example: "class Dog: pass" },
+      { term: "Object", definition: "An instance of a class. Objects have their own copy of the class's attributes.", category: "OOP", example: "my_dog = Dog()" },
+      { term: "Instance", definition: "A specific realization of a class. Each instance has its own attribute values.", category: "OOP", example: "dog1 = Dog()" },
+      { term: "Method", definition: "A function defined inside a class that operates on instances of that class.", category: "OOP", example: "def bark(self): ..." },
+      { term: "Attribute", definition: "A variable that belongs to an object or class, storing data about that object.", category: "OOP", example: "self.name = 'Rex'" },
+      { term: "Constructor", definition: "A special method (__init__) that initializes a new object when it's created.", category: "OOP", example: "def __init__(self):" },
+      { term: "Self", definition: "A reference to the current instance of a class, used to access attributes and methods.", category: "OOP", example: "self.value = 10" },
+      { term: "Inheritance", definition: "A mechanism where a new class derives properties and behaviors from an existing class.", category: "OOP", example: "class Puppy(Dog):" },
+      { term: "Polymorphism", definition: "The ability to use a common interface for different underlying data types or classes.", category: "OOP", example: "speak() works for Dog and Cat" },
+      { term: "Encapsulation", definition: "Bundling data and methods that operate on that data within a single unit (class).", category: "OOP", example: "private attributes with _" },
+      { term: "Abstraction", definition: "Hiding complex implementation details and showing only the necessary features of an object.", category: "OOP", example: "from abc import ABC" },
+      { term: "Super", definition: "A function that returns a proxy object allowing you to call methods from a parent class.", category: "OOP", example: "super().__init__()" },
+      { term: "Property", definition: "A decorator that allows getter, setter, and deleter methods for an attribute.", category: "OOP", example: "@property" },
+      { term: "Static Method", definition: "A method that doesn't receive an implicit first argument. It's bound to the class, not instances.", category: "OOP", example: "@staticmethod" },
+      { term: "Class Method", definition: "A method that receives the class as an implicit first argument instead of an instance.", category: "OOP", example: "@classmethod" },
+      { term: "Dunder Method", definition: "Special methods with double underscores (like __init__, __str__) that define object behavior.", category: "OOP", example: "__repr__, __len__" },
+      { term: "Magic Method", definition: "Another name for dunder methods. They enable operator overloading and custom behaviors.", category: "OOP", example: "__add__, __eq__" },
+      { term: "Multiple Inheritance", definition: "A feature where a class can inherit from more than one parent class.", category: "OOP", example: "class C(A, B):" },
+      { term: "MRO", definition: "Method Resolution Order - the order in which Python looks for methods in class hierarchies.", category: "OOP", example: "ClassName.__mro__" },
+      { term: "Mixin", definition: "A class that provides methods to other classes through inheritance but isn't meant to stand alone.", category: "OOP", example: "class LoggingMixin:" },
+      
+      // Modules & Packages
+      { term: "Module", definition: "A Python file containing code (functions, classes, variables) that can be imported and reused.", category: "Modules", example: "import math" },
+      { term: "Package", definition: "A directory containing multiple modules and an __init__.py file, organizing related code.", category: "Modules", example: "from package import module" },
+      { term: "Import", definition: "A statement that brings code from external modules into the current namespace.", category: "Modules", example: "import os" },
+      { term: "From Import", definition: "Importing specific items from a module rather than the entire module.", category: "Modules", example: "from math import sqrt" },
+      { term: "__init__.py", definition: "A special file that marks a directory as a Python package and can contain initialization code.", category: "Modules", example: "package/__init__.py" },
+      { term: "pip", definition: "The standard package installer for Python. Used to install packages from PyPI.", category: "Modules", example: "pip install requests" },
+      { term: "PyPI", definition: "Python Package Index - the official repository for third-party Python packages.", category: "Modules", example: "pypi.org" },
+      { term: "Virtual Environment", definition: "An isolated Python environment that has its own dependencies, separate from system packages.", category: "Modules", example: "python -m venv myenv" },
+      { term: "__name__", definition: "A special variable that equals '__main__' when a script is run directly.", category: "Modules", example: "if __name__ == '__main__':" },
+      { term: "Namespace", definition: "A container that holds a set of identifiers (names) and ensures they're unique within that scope.", category: "Modules", example: "math.pi vs local pi" },
+      
+      // Error Handling
+      { term: "Exception", definition: "An error that occurs during program execution. Can be caught and handled gracefully.", category: "Error Handling", example: "raise ValueError()" },
+      { term: "Try", definition: "A block that contains code that might raise an exception.", category: "Error Handling", example: "try: risky_operation()" },
+      { term: "Except", definition: "A block that handles specific exceptions raised in the try block.", category: "Error Handling", example: "except ValueError:" },
+      { term: "Finally", definition: "A block that always executes, regardless of whether an exception occurred.", category: "Error Handling", example: "finally: cleanup()" },
+      { term: "Raise", definition: "A statement that triggers an exception, either a new one or re-raising a caught one.", category: "Error Handling", example: "raise TypeError('msg')" },
+      { term: "Assert", definition: "A debugging statement that tests a condition and raises AssertionError if False.", category: "Error Handling", example: "assert x > 0" },
+      { term: "Traceback", definition: "A report showing the sequence of function calls that led to an error.", category: "Error Handling", example: "Traceback (most recent call last)" },
+      { term: "SyntaxError", definition: "An error raised when Python encounters invalid syntax in the code.", category: "Error Handling", example: "print('hello'" },
+      { term: "TypeError", definition: "An error raised when an operation is applied to an object of inappropriate type.", category: "Error Handling", example: "'2' + 2" },
+      { term: "ValueError", definition: "An error raised when a function receives an argument of correct type but invalid value.", category: "Error Handling", example: "int('hello')" },
+      { term: "IndexError", definition: "An error raised when trying to access a sequence index that doesn't exist.", category: "Error Handling", example: "list[100] on small list" },
+      { term: "KeyError", definition: "An error raised when trying to access a dictionary key that doesn't exist.", category: "Error Handling", example: "dict['missing_key']" },
+      { term: "AttributeError", definition: "An error raised when trying to access an attribute that doesn't exist on an object.", category: "Error Handling", example: "None.upper()" },
+      { term: "ImportError", definition: "An error raised when an import statement fails to find the specified module.", category: "Error Handling", example: "import nonexistent" },
+      { term: "NameError", definition: "An error raised when a local or global name is not found.", category: "Error Handling", example: "print(undefined_var)" },
+      { term: "ZeroDivisionError", definition: "An error raised when attempting to divide by zero.", category: "Error Handling", example: "10 / 0" },
+      
+      // File I/O
+      { term: "Open", definition: "A built-in function that opens a file and returns a file object for reading or writing.", category: "File I/O", example: "open('file.txt', 'r')" },
+      { term: "Read", definition: "A method that reads content from a file object, either entirely or a specified number of bytes.", category: "File I/O", example: "file.read()" },
+      { term: "Write", definition: "A method that writes a string to a file object.", category: "File I/O", example: "file.write('data')" },
+      { term: "Close", definition: "A method that closes a file object, freeing system resources.", category: "File I/O", example: "file.close()" },
+      { term: "With Statement", definition: "A context manager that ensures proper cleanup of resources like files.", category: "File I/O", example: "with open('f') as f:" },
+      { term: "Context Manager", definition: "An object that defines enter and exit methods for use with the 'with' statement.", category: "File I/O", example: "__enter__, __exit__" },
+      { term: "File Mode", definition: "A string specifying how a file should be opened: read, write, append, binary, etc.", category: "File I/O", example: "'r', 'w', 'a', 'rb'" },
+      { term: "Readline", definition: "A method that reads a single line from a file.", category: "File I/O", example: "file.readline()" },
+      { term: "Readlines", definition: "A method that reads all lines from a file and returns them as a list.", category: "File I/O", example: "file.readlines()" },
+      { term: "Seek", definition: "A method that moves the file pointer to a specific position in the file.", category: "File I/O", example: "file.seek(0)" },
+      
+      // Iterators & Generators
+      { term: "Iterator", definition: "An object that implements __iter__ and __next__ methods, allowing sequential access to elements.", category: "Iterators", example: "iter([1, 2, 3])" },
+      { term: "Iterable", definition: "An object capable of returning its members one at a time. Lists, strings, and dicts are iterables.", category: "Iterators", example: "for item in iterable:" },
+      { term: "Generator", definition: "A function that uses yield to return values one at a time, maintaining state between calls.", category: "Iterators", example: "def gen(): yield 1" },
+      { term: "Yield", definition: "A keyword that pauses a generator function and returns a value, resuming on next iteration.", category: "Iterators", example: "yield value" },
+      { term: "Generator Expression", definition: "A concise way to create generators using comprehension-like syntax with parentheses.", category: "Iterators", example: "(x**2 for x in range(10))" },
+      { term: "Next", definition: "A built-in function that retrieves the next item from an iterator.", category: "Iterators", example: "next(iterator)" },
+      { term: "Iter", definition: "A built-in function that returns an iterator object from an iterable.", category: "Iterators", example: "iter([1, 2, 3])" },
+      { term: "StopIteration", definition: "An exception raised when an iterator has no more items to return.", category: "Iterators", example: "raised by next()" },
+      { term: "Enumerate", definition: "A built-in function that returns an iterator of tuples containing indices and values.", category: "Iterators", example: "enumerate(['a', 'b'])" },
+      { term: "Zip", definition: "A built-in function that combines multiple iterables into an iterator of tuples.", category: "Iterators", example: "zip([1,2], ['a','b'])" },
+      
+      // Comprehensions
+      { term: "List Comprehension", definition: "A concise way to create lists using a single line of code with brackets.", category: "Comprehensions", example: "[x*2 for x in range(5)]" },
+      { term: "Dict Comprehension", definition: "A concise way to create dictionaries using a single expression.", category: "Comprehensions", example: "{k: v for k, v in items}" },
+      { term: "Set Comprehension", definition: "A concise way to create sets using curly braces without colons.", category: "Comprehensions", example: "{x*2 for x in range(5)}" },
+      { term: "Nested Comprehension", definition: "A comprehension containing another comprehension, used for multi-dimensional structures.", category: "Comprehensions", example: "[[j for j in range(3)] for i in range(3)]" },
+      { term: "Conditional Comprehension", definition: "A comprehension with an if clause to filter elements.", category: "Comprehensions", example: "[x for x in lst if x > 0]" },
+      
+      // Decorators
+      { term: "Decorator", definition: "A function that modifies the behavior of another function without changing its code.", category: "Decorators", example: "@decorator" },
+      { term: "@ Symbol", definition: "The syntax used to apply a decorator to a function or class.", category: "Decorators", example: "@functools.wraps" },
+      { term: "Wrapper Function", definition: "A function inside a decorator that wraps and modifies the original function's behavior.", category: "Decorators", example: "def wrapper(*args):" },
+      { term: "functools.wraps", definition: "A decorator that preserves the original function's metadata when wrapping.", category: "Decorators", example: "@functools.wraps(func)" },
+      { term: "Class Decorator", definition: "A decorator that modifies or enhances a class definition.", category: "Decorators", example: "@dataclass" },
+      { term: "Decorator with Arguments", definition: "A decorator that accepts parameters, requiring an extra level of nesting.", category: "Decorators", example: "@decorator(arg)" },
+      
+      // Built-in Functions
+      { term: "Print", definition: "A built-in function that outputs text to the console.", category: "Built-ins", example: "print('Hello')" },
+      { term: "Input", definition: "A built-in function that reads a line of text from the user.", category: "Built-ins", example: "name = input('Name: ')" },
+      { term: "Len", definition: "A built-in function that returns the number of items in a container.", category: "Built-ins", example: "len([1, 2, 3])" },
+      { term: "Range", definition: "A built-in function that generates a sequence of numbers.", category: "Built-ins", example: "range(0, 10, 2)" },
+      { term: "Type", definition: "A built-in function that returns the type of an object.", category: "Built-ins", example: "type(42)" },
+      { term: "Isinstance", definition: "A built-in function that checks if an object is an instance of a class.", category: "Built-ins", example: "isinstance(x, int)" },
+      { term: "Dir", definition: "A built-in function that returns a list of an object's attributes and methods.", category: "Built-ins", example: "dir(obj)" },
+      { term: "Help", definition: "A built-in function that displays documentation for objects, modules, or functions.", category: "Built-ins", example: "help(print)" },
+      { term: "Sorted", definition: "A built-in function that returns a new sorted list from an iterable.", category: "Built-ins", example: "sorted([3, 1, 2])" },
+      { term: "Reversed", definition: "A built-in function that returns a reverse iterator.", category: "Built-ins", example: "reversed([1, 2, 3])" },
+      { term: "Map", definition: "A built-in function that applies a function to every item in an iterable.", category: "Built-ins", example: "map(str, [1, 2, 3])" },
+      { term: "Filter", definition: "A built-in function that constructs an iterator from elements that pass a test.", category: "Built-ins", example: "filter(lambda x: x>0, lst)" },
+      { term: "Reduce", definition: "A function that applies a rolling computation to sequential pairs of values.", category: "Built-ins", example: "reduce(lambda a,b: a+b, lst)" },
+      { term: "Sum", definition: "A built-in function that sums all items in an iterable.", category: "Built-ins", example: "sum([1, 2, 3])" },
+      { term: "Min", definition: "A built-in function that returns the smallest item in an iterable.", category: "Built-ins", example: "min([1, 2, 3])" },
+      { term: "Max", definition: "A built-in function that returns the largest item in an iterable.", category: "Built-ins", example: "max([1, 2, 3])" },
+      { term: "Abs", definition: "A built-in function that returns the absolute value of a number.", category: "Built-ins", example: "abs(-5)" },
+      { term: "Round", definition: "A built-in function that rounds a number to a given precision.", category: "Built-ins", example: "round(3.14159, 2)" },
+      { term: "Any", definition: "A built-in function that returns True if any element is truthy.", category: "Built-ins", example: "any([False, True])" },
+      { term: "All", definition: "A built-in function that returns True if all elements are truthy.", category: "Built-ins", example: "all([True, True])" },
+      { term: "Callable", definition: "A built-in function that checks if an object can be called like a function.", category: "Built-ins", example: "callable(print)" },
+      { term: "Getattr", definition: "A built-in function that returns the value of a named attribute of an object.", category: "Built-ins", example: "getattr(obj, 'name')" },
+      { term: "Setattr", definition: "A built-in function that sets the value of a named attribute of an object.", category: "Built-ins", example: "setattr(obj, 'name', 'val')" },
+      { term: "Hasattr", definition: "A built-in function that checks if an object has a named attribute.", category: "Built-ins", example: "hasattr(obj, 'name')" },
+      
+      // String Methods
+      { term: "Strip", definition: "A string method that removes leading and trailing whitespace.", category: "String Methods", example: "'  hello  '.strip()" },
+      { term: "Split", definition: "A string method that divides a string into a list based on a delimiter.", category: "String Methods", example: "'a,b,c'.split(',')" },
+      { term: "Join", definition: "A string method that concatenates elements of an iterable with a separator.", category: "String Methods", example: "','.join(['a','b'])" },
+      { term: "Replace", definition: "A string method that substitutes occurrences of a substring with another.", category: "String Methods", example: "'hi'.replace('i','ey')" },
+      { term: "Find", definition: "A string method that returns the index of the first occurrence of a substring.", category: "String Methods", example: "'hello'.find('l')" },
+      { term: "Upper", definition: "A string method that returns the string in uppercase.", category: "String Methods", example: "'hello'.upper()" },
+      { term: "Lower", definition: "A string method that returns the string in lowercase.", category: "String Methods", example: "'HELLO'.lower()" },
+      { term: "Title", definition: "A string method that capitalizes the first letter of each word.", category: "String Methods", example: "'hello world'.title()" },
+      { term: "Format", definition: "A string method for inserting values into placeholders.", category: "String Methods", example: "'{} is {}'.format('Python', 'fun')" },
+      { term: "F-String", definition: "A formatted string literal (Python 3.6+) that embeds expressions directly.", category: "String Methods", example: "f'Value: {x}'" },
+      { term: "Startswith", definition: "A string method that checks if a string begins with a specified prefix.", category: "String Methods", example: "'hello'.startswith('he')" },
+      { term: "Endswith", definition: "A string method that checks if a string ends with a specified suffix.", category: "String Methods", example: "'hello'.endswith('lo')" },
+      { term: "Isdigit", definition: "A string method that returns True if all characters are digits.", category: "String Methods", example: "'123'.isdigit()" },
+      { term: "Isalpha", definition: "A string method that returns True if all characters are alphabetic.", category: "String Methods", example: "'abc'.isalpha()" },
+      
+      // Advanced Concepts
+      { term: "Async", definition: "A keyword that defines an asynchronous coroutine function.", category: "Advanced", example: "async def fetch():" },
+      { term: "Await", definition: "A keyword that pauses coroutine execution until an awaitable completes.", category: "Advanced", example: "await asyncio.sleep(1)" },
+      { term: "Coroutine", definition: "A special function that can pause and resume execution for concurrent programming.", category: "Advanced", example: "async def coro():" },
+      { term: "Event Loop", definition: "The core of asyncio that schedules and runs asynchronous tasks.", category: "Advanced", example: "asyncio.get_event_loop()" },
+      { term: "Threading", definition: "A module for creating and managing threads for concurrent execution.", category: "Advanced", example: "import threading" },
+      { term: "Multiprocessing", definition: "A module for spawning processes for true parallel execution.", category: "Advanced", example: "import multiprocessing" },
+      { term: "GIL", definition: "Global Interpreter Lock - a mutex that protects access to Python objects, limiting true parallelism.", category: "Advanced", example: "limits threading performance" },
+      { term: "Metaclass", definition: "A class whose instances are classes. Used to customize class creation.", category: "Advanced", example: "class Meta(type):" },
+      { term: "Descriptor", definition: "An object that customizes attribute access using __get__, __set__, or __delete__.", category: "Advanced", example: "class Descriptor:" },
+      { term: "Slots", definition: "A class attribute that restricts instance attributes, saving memory.", category: "Advanced", example: "__slots__ = ['x', 'y']" },
+      { term: "Garbage Collection", definition: "Automatic memory management that reclaims unused memory.", category: "Advanced", example: "import gc; gc.collect()" },
+      { term: "Reference Counting", definition: "Python's primary memory management technique, tracking object references.", category: "Advanced", example: "sys.getrefcount(obj)" },
+      { term: "Weak Reference", definition: "A reference that doesn't prevent an object from being garbage collected.", category: "Advanced", example: "import weakref" },
+      { term: "Type Hints", definition: "Annotations that indicate expected types for function arguments and returns.", category: "Advanced", example: "def greet(name: str) -> str:" },
+      { term: "Protocol", definition: "A structural subtyping mechanism for type checking based on methods, not inheritance.", category: "Advanced", example: "from typing import Protocol" },
+      { term: "ABC", definition: "Abstract Base Class - a class that cannot be instantiated and defines abstract methods.", category: "Advanced", example: "from abc import ABC" },
+      { term: "Dataclass", definition: "A decorator that automatically generates special methods for data-holding classes.", category: "Advanced", example: "@dataclass" },
+      { term: "Enum", definition: "A class for creating enumeration types with unique constant values.", category: "Advanced", example: "from enum import Enum" },
+      
+      // Operators
+      { term: "Arithmetic Operators", definition: "Operators for mathematical operations: +, -, *, /, //, %, **", category: "Operators", example: "5 + 3, 10 // 3" },
+      { term: "Comparison Operators", definition: "Operators for comparing values: ==, !=, <, >, <=, >=", category: "Operators", example: "x == y, a < b" },
+      { term: "Logical Operators", definition: "Operators for boolean logic: and, or, not", category: "Operators", example: "x and y, not z" },
+      { term: "Bitwise Operators", definition: "Operators for bit-level operations: &, |, ^, ~, <<, >>", category: "Operators", example: "5 & 3, 1 << 4" },
+      { term: "Assignment Operators", definition: "Operators that assign values: =, +=, -=, *=, /=, etc.", category: "Operators", example: "x += 5" },
+      { term: "Identity Operators", definition: "Operators that compare object identity: is, is not", category: "Operators", example: "x is None" },
+      { term: "Membership Operators", definition: "Operators that test membership: in, not in", category: "Operators", example: "'a' in 'cat'" },
+      { term: "Walrus Operator", definition: "An assignment expression operator (:=) that assigns values within expressions.", category: "Operators", example: "if (n := len(a)) > 10:" },
+      { term: "Unpacking Operator", definition: "The * operator used to unpack iterables into individual elements.", category: "Operators", example: "*args, a, *rest = lst" },
+      
+      // Testing
+      { term: "Unit Test", definition: "A test that verifies the behavior of a small, isolated piece of code.", category: "Testing", example: "import unittest" },
+      { term: "Assert Statement", definition: "A statement used in tests to verify expected conditions.", category: "Testing", example: "assert result == expected" },
+      { term: "Pytest", definition: "A popular third-party testing framework with powerful features and simple syntax.", category: "Testing", example: "def test_func():" },
+      { term: "Mock", definition: "A simulated object that mimics the behavior of real objects for testing.", category: "Testing", example: "from unittest.mock import Mock" },
+      { term: "Fixture", definition: "A function that provides test data or sets up test conditions.", category: "Testing", example: "@pytest.fixture" },
+      { term: "Test Coverage", definition: "A metric measuring how much of the code is executed during tests.", category: "Testing", example: "coverage run tests.py" },
+      { term: "TDD", definition: "Test-Driven Development - a practice of writing tests before implementation.", category: "Testing", example: "write test, fail, implement, pass" },
+      
+      // Common Patterns
+      { term: "Singleton", definition: "A design pattern ensuring a class has only one instance.", category: "Patterns", example: "class Singleton: _instance = None" },
+      { term: "Factory", definition: "A design pattern for creating objects without specifying their exact class.", category: "Patterns", example: "def create_shape(type):" },
+      { term: "Observer", definition: "A design pattern where objects subscribe to and receive notifications from a subject.", category: "Patterns", example: "subject.attach(observer)" },
+      { term: "Decorator Pattern", definition: "A design pattern that adds behavior to objects dynamically.", category: "Patterns", example: "class Decorator:" },
+      { term: "Context Manager Protocol", definition: "A pattern using __enter__ and __exit__ for resource management.", category: "Patterns", example: "with resource as r:" },
+      { term: "EAFP", definition: "Easier to Ask Forgiveness than Permission - using try/except over checking conditions.", category: "Patterns", example: "try: x[key] except KeyError:" },
+      { term: "LBYL", definition: "Look Before You Leap - checking conditions before attempting an operation.", category: "Patterns", example: "if key in x: x[key]" },
+      { term: "Duck Typing", definition: "A concept where an object's type is determined by its behavior, not its class.", category: "Patterns", example: "if it quacks like a duck..." },
+      
+      // Memory & Performance
+      { term: "Memory View", definition: "An object that exposes an array's buffer interface without copying.", category: "Performance", example: "memoryview(bytearray(5))" },
+      { term: "Interning", definition: "Optimization where identical immutable objects share memory.", category: "Performance", example: "a = 'hello'; b = 'hello'" },
+      { term: "Profiling", definition: "Measuring program performance to identify bottlenecks.", category: "Performance", example: "import cProfile" },
+      { term: "Memoization", definition: "Caching function results to avoid redundant computations.", category: "Performance", example: "@functools.lru_cache" },
+      { term: "Lazy Evaluation", definition: "Delaying computation until the result is actually needed.", category: "Performance", example: "generators are lazy" },
+      
+      // Environment
+      { term: "REPL", definition: "Read-Eval-Print Loop - an interactive Python shell for experimentation.", category: "Environment", example: ">>> python" },
+      { term: "IDE", definition: "Integrated Development Environment - software for writing and debugging code.", category: "Environment", example: "PyCharm, VS Code" },
+      { term: "Interpreter", definition: "The program that executes Python code line by line.", category: "Environment", example: "python script.py" },
+      { term: "Bytecode", definition: "Compiled Python code that runs on the Python virtual machine.", category: "Environment", example: ".pyc files" },
+      { term: "CPython", definition: "The reference implementation of Python written in C.", category: "Environment", example: "default Python" },
+      { term: "PyPy", definition: "An alternative Python implementation with a JIT compiler for speed.", category: "Environment", example: "pypy script.py" },
+      { term: "Shebang", definition: "The first line of a script specifying the interpreter to use.", category: "Environment", example: "#!/usr/bin/env python3" },
+      { term: "PEP", definition: "Python Enhancement Proposal - documents describing features or processes.", category: "Environment", example: "PEP 8, PEP 20" },
+      { term: "PEP 8", definition: "The style guide for Python code, covering formatting and naming conventions.", category: "Environment", example: "snake_case for functions" },
+      { term: "Pythonic", definition: "Code that follows Python's idioms and best practices.", category: "Environment", example: "for item in list:" },
+      { term: "Zen of Python", definition: "A collection of 19 guiding principles for writing Python code.", category: "Environment", example: "import this" }
+    ];
 
-        /* BOOT SEQUENCE */
-        #boot-sequence { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #0b0a09; z-index: 100; transition: opacity 1.5s; color: white; text-align: center; }
-        .intro-slide { opacity: 0; position: absolute; transition: 0.8s; max-width: 600px; display: none; }
-        .intro-slide.active { opacity: 1; display: flex; flex-direction: column; align-items: center; }
-        
-        #building-card {
-            position: fixed; top: 20px; right: 20px; width: 300px;
-            background: var(--bg); border: 1px solid var(--gold);
-            color: var(--sand); padding: 20px; display: none; z-index: 50;
-            backdrop-filter: blur(15px); border-radius: 8px;
-        }
-    </style>
-</head>
-<body>
+    const categories = [...new Set(pythonTerms.map(t => t.category))].sort();
+    
+    const categoryColors = {
+      "Core Concepts": { bg: "#4ade80", text: "#052e16" },
+      "Data Structures": { bg: "#3b82f6", text: "#eff6ff" },
+      "Functions": { bg: "#f59e0b", text: "#451a03" },
+      "Control Flow": { bg: "#ec4899", text: "#fdf2f8" },
+      "OOP": { bg: "#8b5cf6", text: "#f5f3ff" },
+      "Modules": { bg: "#06b6d4", text: "#042f2e" },
+      "Error Handling": { bg: "#ef4444", text: "#fef2f2" },
+      "File I/O": { bg: "#84cc16", text: "#1a2e05" },
+      "Iterators": { bg: "#f97316", text: "#431407" },
+      "Comprehensions": { bg: "#14b8a6", text: "#042f2e" },
+      "Decorators": { bg: "#a855f7", text: "#faf5ff" },
+      "Built-ins": { bg: "#6366f1", text: "#eef2ff" },
+      "String Methods": { bg: "#22c55e", text: "#052e16" },
+      "Advanced": { bg: "#dc2626", text: "#fef2f2" },
+      "Operators": { bg: "#0ea5e9", text: "#f0f9ff" },
+      "Testing": { bg: "#eab308", text: "#422006" },
+      "Patterns": { bg: "#d946ef", text: "#fdf4ff" },
+      "Performance": { bg: "#f43f5e", text: "#fff1f2" },
+      "Environment": { bg: "#64748b", text: "#f8fafc" }
+    };
 
-    <div id="sidebar" class="collapsed">
-        <div id="sidebar-toggle">🗺️</div>
-        
-        <div class="sidebar-section">
-            <h3>MINI MAP</h3>
-            <div id="mini-map"><div class="map-center"></div><div id="map-dot"></div></div>
-        </div>
+    let activeCategory = null;
+    let searchTerm = '';
 
-        <div class="sidebar-section">
-            <h3>CHRONICLE DATA</h3>
-            <div class="desc-text">
-                The center holds the <b>Palace of the Golden Gate</b>. Adjacent sits the <b>Great Mosque</b>. 
-                Explore the residential rings to find the homes of scholars and merchants.
+    function renderCategories() {
+      const container = document.getElementById('category-filters');
+      container.innerHTML = `
+        <button 
+          onclick="setCategory(null)" 
+          class="category-pill px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeCategory === null ? 'ring-2 ring-offset-2 ring-offset-slate-900' : ''}"
+          style="background-color: ${activeCategory === null ? config.accent_color : config.card_color}; color: ${activeCategory === null ? '#052e16' : config.text_color}; ${activeCategory === null ? 'ring-color: ' + config.accent_color : ''}"
+        >
+          All Terms
+        </button>
+        ${categories.map(cat => {
+          const colors = categoryColors[cat] || { bg: '#64748b', text: '#f8fafc' };
+          const isActive = activeCategory === cat;
+          return `
+            <button 
+              onclick="setCategory('${cat}')" 
+              class="category-pill px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isActive ? 'ring-2 ring-offset-2 ring-offset-slate-900' : ''}"
+              style="background-color: ${isActive ? colors.bg : config.card_color}; color: ${isActive ? colors.text : config.text_color}; ${isActive ? 'ring-color: ' + colors.bg : ''}"
+            >
+              ${cat}
+            </button>
+          `;
+        }).join('')}
+      `;
+    }
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      renderCategories();
+      renderTerms();
+    }
+
+    function renderTerms() {
+      const grid = document.getElementById('terms-grid');
+      const noResults = document.getElementById('no-results');
+      
+      let filtered = pythonTerms;
+      
+      if (activeCategory) {
+        filtered = filtered.filter(t => t.category === activeCategory);
+      }
+      
+      if (searchTerm) {
+        const lower = searchTerm.toLowerCase();
+        filtered = filtered.filter(t => 
+          t.term.toLowerCase().includes(lower) ||
+          t.definition.toLowerCase().includes(lower) ||
+          t.category.toLowerCase().includes(lower) ||
+          t.example.toLowerCase().includes(lower)
+        );
+      }
+
+      document.getElementById('term-count').textContent = `${filtered.length} terms`;
+
+      if (filtered.length === 0) {
+        grid.classList.add('hidden');
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      grid.classList.remove('hidden');
+      noResults.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(term => {
+        const colors = categoryColors[term.category] || { bg: '#64748b', text: '#f8fafc' };
+        return `
+          <div class="term-card rounded-xl p-5 border" style="background-color: ${config.card_color}; border-color: #334155;">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <h3 class="font-mono-code font-semibold text-lg" style="color: ${config.accent_color};">${term.term}</h3>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap" style="background-color: ${colors.bg}; color: ${colors.text};">
+                ${term.category}
+              </span>
             </div>
-        </div>
+            <p class="text-sm mb-4 leading-relaxed" style="color: ${config.text_color}; opacity: 0.9;">${term.definition}</p>
+            <div class="rounded-lg px-3 py-2 font-mono-code text-xs" style="background-color: rgba(0,0,0,0.3); color: ${config.secondary_color};">
+              ${term.example}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-        <div class="sidebar-section">
-            <label class="toggle-container">
-                <input type="checkbox" id="scale-toggle"> ENLARGE CITY SCALE
-            </label>
-        </div>
+    function applyConfig() {
+      const app = document.getElementById('app');
+      app.style.backgroundColor = config.background_color;
+      
+      document.getElementById('main-title').textContent = config.main_title;
+      document.getElementById('search-input').placeholder = config.search_placeholder;
+      
+      renderCategories();
+      renderTerms();
+    }
 
-        <div class="nav-links">
-            <a href="https://ko-fi.com/matteo44642" target="_blank" class="ui-btn">☕ SUPPORT ON KO-FI</a>
-            <a href="https://github.com/bingkahu/build-a-city" target="_blank" class="ui-btn">⭐ STAR ON GITHUB</a>
-        </div>
-    </div>
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchTerm = e.target.value;
+      renderTerms();
+    });
 
-    <div id="building-card">
-        <h2 id="card-title" style="font-size: 1rem; color: var(--gold); margin-top:0;">Structure Found</h2>
-        <p id="card-desc" style="font-size: 0.85rem; margin-bottom:0;">Investigating records...</p>
-        <div id="close-card" style="position:absolute; top:10px; right:10px; cursor:pointer;">×</div>
-    </div>
-
-    <div id="boot-sequence">
-        <div class="intro-slide active" id="slide-0">
-            <h1 style="color:var(--gold); letter-spacing:10px;">BAGHDAD</h1>
-            <p>The Round City of Peace. (Enter to Continue)</p>
-        </div>
-        <div class="intro-slide" id="slide-1">
-            <h1>CENTRE OF WISDOM</h1>
-            <p>Where the world's knowledge was gathered. (Enter to Continue)</p>
-        </div>
-        <div class="intro-slide" id="slide-2">
-            <button id="start-btn" onclick="startApp()" style="padding:15px 40px; background:none; border:2px solid var(--gold); color:var(--gold); cursor:pointer; font-family:'Cinzel';">BEGIN CHRONICLE</button>
-        </div>
-    </div>
-
-    <script type="importmap">{ "imports": { "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js" } }</script>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-
-        let scene, camera, renderer, controls, cityBody, palaceGroup, mosque, townHall, raycaster, mouse;
-        
-        const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.getElementById('sidebar-toggle');
-        const mapDot = document.getElementById('map-dot');
-
-        toggleBtn.onclick = () => sidebar.classList.toggle('collapsed');
-        
-        document.getElementById('scale-toggle').onchange = (e) => {
-            const s = e.target.checked ? 1.8 : 1;
-            scene.scale.set(s, s, s);
-        };
-
-        window.nextSlide = () => {
-            const current = document.querySelector('.intro-slide.active');
-            const next = current?.nextElementSibling;
-            if (next) { current.classList.remove('active'); next.classList.add('active'); }
-        };
-
-        window.addEventListener('keydown', (e) => { if (e.key === "Enter") nextSlide(); });
-
-        window.startApp = () => {
-            document.getElementById('boot-sequence').style.opacity = '0';
-            setTimeout(() => { document.getElementById('boot-sequence').remove(); init(); }, 1000);
-        };
-
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0908);
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 30000);
-            camera.position.set(2000, 1200, 2000);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            const sun = new THREE.DirectionalLight(0xffffff, 1.5);
-            sun.position.set(1000, 2000, 1000);
-            scene.add(sun, new THREE.AmbientLight(0xffffff, 0.4));
-
-            createCity();
-            window.addEventListener('click', onClick);
-            document.getElementById('close-card').onclick = () => document.getElementById('building-card').style.display='none';
-            animate();
+    // Initialize SDK
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (newConfig) => {
+        config = { ...defaultConfig, ...newConfig };
+        applyConfig();
+      },
+      mapToCapabilities: (cfg) => ({
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+          },
+          {
+            get: () => cfg.card_color || defaultConfig.card_color,
+            set: (v) => { cfg.card_color = v; window.elementSdk.setConfig({ card_color: v }); }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+          },
+          {
+            get: () => cfg.accent_color || defaultConfig.accent_color,
+            set: (v) => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
+          },
+          {
+            get: () => cfg.secondary_color || defaultConfig.secondary_color,
+            set: (v) => { cfg.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => cfg.font_family || defaultConfig.font_family,
+          set: (v) => { cfg.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => cfg.font_size || defaultConfig.font_size,
+          set: (v) => { cfg.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
         }
+      }),
+      mapToEditPanelValues: (cfg) => new Map([
+        ['main_title', cfg.main_title || defaultConfig.main_title],
+        ['search_placeholder', cfg.search_placeholder || defaultConfig.search_placeholder]
+      ])
+    });
 
-        function createCity() {
-            const floor = new THREE.Mesh(new THREE.CircleGeometry(5000, 64), new THREE.MeshStandardMaterial({ color: 0x1a1814 }));
-            floor.rotation.x = -Math.PI / 2;
-            scene.add(floor);
-
-            const cityMat = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
-            cityBody = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), cityMat, 3000);
-            const dummy = new THREE.Object3D();
-            for (let i = 0; i < 3000; i++) {
-                const r = 300 + Math.random() * 900;
-                const a = Math.random() * Math.PI * 2;
-                const h = 20 + Math.random() * 40;
-                dummy.position.set(Math.cos(a) * r, h/2, Math.sin(a) * r);
-                dummy.scale.set(20, h, 20);
-                dummy.updateMatrix();
-                cityBody.setMatrixAt(i, dummy.matrix);
-            }
-            scene.add(cityBody);
-
-            palaceGroup = new THREE.Mesh(new THREE.SphereGeometry(60, 32, 16), new THREE.MeshStandardMaterial({color: 0x2d5a27}));
-            palaceGroup.position.y = 30;
-            scene.add(palaceGroup);
-
-            mosque = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 120), cityMat);
-            mosque.position.set(150, 60, 150);
-            scene.add(mosque);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            const mapSize = 10000;
-            mapDot.style.left = `${((camera.position.x + 5000) / 10000) * 100}%`;
-            mapDot.style.top = `${((camera.position.z + 5000) / 10000) * 100}%`;
-            renderer.render(scene, camera);
-        }
-
-        function onClick(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects([palaceGroup, mosque, cityBody]);
-            if (hits.length > 0) {
-                document.getElementById('building-card').style.display = 'block';
-                document.getElementById('card-title').innerText = "Structure Identified";
-                document.getElementById('card-desc').innerText = "Ancient records indicate this was a significant site in the Round City.";
-            }
-        }
-    </script>
-</body>
+    applyConfig();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c198465d42c6553',t:'MTc2OTAyNjg3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
